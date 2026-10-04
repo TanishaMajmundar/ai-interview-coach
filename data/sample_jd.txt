@@ -1,0 +1,35 @@
+Junior Machine Learning Engineer
+Northwind AI Labs | Pune, India (Hybrid) | Full-time
+
+About the role
+We are a small product team building ML-powered tools that help logistics companies forecast demand and optimise delivery routes. We are looking for a Junior Machine Learning Engineer to help us train, evaluate and deploy models, and to turn experiments into reliable services used by real customers. You will work closely with senior engineers and learn how ML systems are built and run in production.
+
+Responsibilities
+- Build, train and evaluate machine learning models for forecasting and classification problems using Python.
+- Clean, transform and analyse large datasets using Pandas, NumPy and SQL.
+- Develop and maintain REST APIs (FastAPI or Flask) that serve model predictions.
+- Package applications with Docker and help deploy them to AWS (EC2, S3, Lambda).
+- Write unit tests and track experiments so results are reproducible.
+- Collaborate with product and engineering teams and present findings clearly to non-technical stakeholders.
+- Review model performance regularly and help monitor models in production for drift and failures.
+
+Required qualifications
+- Bachelor's degree in Computer Science, Data Science or a related field (final-year students may apply).
+- Strong Python programming skills and solid understanding of data structures and algorithms.
+- Good working knowledge of SQL (joins, aggregations, window functions).
+- Hands-on experience with scikit-learn and at least one deep learning framework (PyTorch or TensorFlow).
+- Understanding of core ML concepts: overfitting, cross-validation, evaluation metrics, feature engineering.
+- Familiarity with Git and collaborative development workflows.
+- Basic understanding of REST APIs.
+
+Preferred qualifications
+- Experience with Docker and cloud platforms (AWS preferred).
+- Exposure to time-series forecasting or recommendation systems.
+- Familiarity with MLOps tools such as MLflow or DVC.
+- Experience with Linux command line and CI/CD pipelines.
+- Open-source contributions or a public GitHub portfolio.
+
+What we offer
+- Mentorship from experienced ML engineers.
+- Flexible hybrid working and a learning budget.
+- A chance to own features end to end in a small team.
