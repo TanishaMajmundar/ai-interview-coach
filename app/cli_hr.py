@@ -4,6 +4,7 @@ from tools.pdf_utils import extract_text_from_pdf
 from tools.profile_parser import parse_profile
 from app.models import CandidateProfile
 from agents.interviewer import Interviewer
+from agents.evaluator import Evaluator
 
 DEBUG = "--debug" in sys.argv
 PROFILE_CACHE = Path("data/sample_profile.json")
@@ -26,6 +27,8 @@ def main():
     print("Type your answer and press Enter. Type 'quit' to end early.\n")
 
     interviewer = Interviewer(profile, mode="hr", total_questions=5, debug=DEBUG)
+    evaluator = Evaluator(profile, debug=DEBUG)
+    evaluations = []
 
     for i in range(interviewer.total_questions):
         question = interviewer.next_question()
@@ -39,11 +42,23 @@ def main():
         if not answer:
             answer = "(no answer given)"
         interviewer.record_answer(question, answer)
+
+        evaluation = evaluator.evaluate(question, answer)
+        evaluations.append(evaluation)
+        print(f"\nScore: {evaluation.overall}/5  (relevance {evaluation.relevance}, "
+              f"depth {evaluation.depth}, clarity {evaluation.clarity}, structure {evaluation.structure})")
+        print("Strengths:", "; ".join(evaluation.strengths))
+        print("Weaknesses:", "; ".join(evaluation.weaknesses))
+        print("Improved answer:", evaluation.improved_answer)
         print()
 
     print("\n===== Transcript =====")
     for i, t in enumerate(interviewer.history, 1):
         print(f"Q{i}: {t['question']}\nA{i}: {t['answer']}\n")
+    
+    if evaluations:
+        avg = sum(e.overall for e in evaluations) / len(evaluations)
+        print(f"Average score: {avg:.2f}/5")
 
 
 if __name__ == "__main__":

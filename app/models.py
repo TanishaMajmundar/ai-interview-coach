@@ -1,6 +1,6 @@
 from typing import List, Literal, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class CandidateProfile(BaseModel):
@@ -24,6 +24,15 @@ class Evaluation(BaseModel):
     strengths: List[str]
     weaknesses: List[str]
     improved_answer: str
+    @field_validator("strengths", "weaknesses")
+    @classmethod
+    def drop_blank_items(cls, items):
+        """Remove empty strings the LLM sometimes adds to lists."""
+        return [s.strip() for s in items if s and s.strip()]
+    @property
+    def overall(self) -> float:
+        """Average of the four rubric scores, computed in code (not by the LLM)."""
+        return round((self.relevance + self.depth + self.clarity + self.structure) / 4, 2)
 
 
 class SessionRecord(BaseModel):
