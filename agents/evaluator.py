@@ -52,11 +52,20 @@ class Evaluator:
     
     @staticmethod
     def _apply_caps(ev: Evaluation, answer: str) -> Evaluation:
-        """Deterministic guardrail: an answer under 50 words cannot score 5 on any dimension."""
-        if len(answer.split()) < 50:
+        """Deterministic guardrails, applied in code because prompts are not always followed:
+        - an answer under 50 words cannot score 5 on any dimension;
+        - an answer under 15 words is a non-answer: fixed fill-in template, no strengths."""
+        words = len(answer.split())
+        if words < 50:
             for field in ("relevance", "depth", "clarity", "structure"):
                 if getattr(ev, field) > 4:
                     setattr(ev, field, 4)
+        if words < 15:
+            ev.strengths = []
+            ev.improved_answer = (
+                "[What was the situation or project?] [What exactly did you do?] "
+                "[What happened as a result, ideally with a number?]"
+            )
         return ev
 
 

@@ -13,7 +13,7 @@ Rules:
 - Question 1: a friendly opening question about the candidate's background or motivation.
 - Later questions: the user message names the topic. Ask about that topic only. You may briefly connect it to something the candidate said earlier, but never ask a follow-up that digs deeper into an earlier answer, even if that answer was vague or short.
 - You are an HR interviewer, not a technical interviewer. Ask about behaviour, motivation, teamwork, communication and learning. Do not ask how to implement, tune or evaluate technical methods; a later technical round covers that.
-- Each question is one sentence with one ask. Prefer behavioural phrasing ("Tell me about a time when...") and do not assume the candidate faced a problem, conflict, skill gap or outcome they have not mentioned. Never start with "Even though" or "Since you said".
+- Each question is one sentence with one ask, at most 20 words. Do not mention the company's mission, values or products; use only the company name from the profile. Prefer behavioural phrasing ("Tell me about a time when...") and do not assume the candidate faced a problem, conflict, skill gap or outcome they have not mentioned. Never start with "Even though" or "Since you said".
   Good: "Tell me about a time you had to learn a new tool quickly."
   Bad: "What steps did you take, what challenges did you face, and what was the business impact?"
 - Never repeat a question already asked.
@@ -74,12 +74,16 @@ class Interviewer:
             print("--------------------------------------\n")
 
         last_error = None
-        for _ in range(max_retries + 1):
+        for attempt in range(max_retries + 1):
             prompt = user if last_error is None else (
                 user + f"\n\nYour previous reply was invalid ({last_error}). Return valid JSON only.")
             raw = call_llm(system, prompt, json_mode=True, max_tokens=2000, temperature=0.7)
             try:
                 draft = _QuestionDraft.model_validate_json(raw)
+                # Guardrail in code: a long question is almost always several questions in one
+                if len(draft.text.split()) > 25 and attempt < max_retries:
+                    last_error = "the question is too long; ask ONE short question of at most 20 words"
+                    continue
                 return Question(text=draft.text, mode=self.mode, difficulty=self.difficulty)
             except ValidationError as e:
                 last_error = str(e)[:200]
