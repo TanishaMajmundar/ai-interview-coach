@@ -11,11 +11,10 @@ Return ONLY a JSON object: {{"text": "<the question>", "difficulty": <integer 1-
 Rules:
 - Ask exactly ONE question. Do not give feedback, scores or hints.
 - Question 1: a friendly opening question about the candidate's background or motivation.
-- Later questions: if the last answer was vague or very short, ask ONE follow-up that refers to a specific detail the candidate said. Never ask more than one follow-up in a row on the same topic. After a follow-up, always move to a NEW HR topic not yet covered, and briefly connect it to something they said earlier when natural.
+- Later questions: the user message names the topic. Ask about that topic only. You may briefly connect it to something the candidate said earlier, but never ask a follow-up that digs deeper into an earlier answer, even if that answer was vague or short.
 - You are an HR interviewer, not a technical interviewer. Ask about behaviour, motivation, teamwork, communication and learning. Do not ask how to implement, tune or evaluate technical methods; a later technical round covers that.
-- HR topics (use a different one for each question when possible): motivation for the role, teamwork, handling conflict or failure, strengths and weaknesses, learning new skills (especially the profile's gaps), career goals.
-- Each question is one sentence with one ask. Prefer behavioural phrasing ("Tell me about a time when...") and do not assume the candidate faced a problem, conflict or outcome they have not mentioned.
-  Good: "Tell me about a time you disagreed with a teammate and how you resolved it."
+- Each question is one sentence with one ask. Prefer behavioural phrasing ("Tell me about a time when...") and do not assume the candidate faced a problem, conflict, skill gap or outcome they have not mentioned. Never start with "Even though" or "Since you said".
+  Good: "Tell me about a time you had to learn a new tool quickly."
   Bad: "What steps did you take, what challenges did you face, and what was the business impact?"
 - Never repeat a question already asked.
 - Use only facts from the profile and conversation. Do not invent details about the candidate.
@@ -24,6 +23,7 @@ Rules:
   1-2: simple, factual or descriptive questions ("Tell me about your internship.").
   3: standard behavioural questions about one situation and what the candidate did.
   4-5: questions that require reflection, trade-offs, handling ambiguity, pressure or failure, or explaining a decision and its consequences.
+- Do not use the phrase "data-focused".
 """
 
 
@@ -32,6 +32,14 @@ class _QuestionDraft(BaseModel):
     text: str = Field(min_length=5)
     difficulty: int = Field(ge=1, le=5)
 
+HR_TOPIC_PLAN = [
+    "motivation for the role",
+    "teamwork",
+    "handling conflict or failure",
+    "learning a new skill (pick one gap from the profile and ask how they would get up to speed on it; do not assume they have already used it)",
+    "strengths and weaknesses",
+    "career goals",
+]
 
 class Interviewer:
     def __init__(self, profile: CandidateProfile, mode: str = "hr",
@@ -52,7 +60,8 @@ class Interviewer:
         return (
             f"<candidate_profile>\n{self.profile.model_dump_json(indent=2)}\n</candidate_profile>\n\n"
             f"<conversation>\n{transcript}\n</conversation>\n\n"
-            f"Ask question {number} of {self.total_questions}."
+            f"Ask question {number} of {self.total_questions}. "
+            f"Topic for this question: {HR_TOPIC_PLAN[len(self.history) % len(HR_TOPIC_PLAN)]}."
         )
 
     def next_question(self, max_retries: int = 2) -> Question:
@@ -71,7 +80,7 @@ class Interviewer:
             raw = call_llm(system, prompt, json_mode=True, max_tokens=2000, temperature=0.7)
             try:
                 draft = _QuestionDraft.model_validate_json(raw)
-                return Question(text=draft.text, mode=self.mode, difficulty=draft.difficulty)
+                return Question(text=draft.text, mode=self.mode, difficulty=self.difficulty)
             except ValidationError as e:
                 last_error = str(e)[:200]
         raise ValueError(f"Could not generate a question: {last_error}")

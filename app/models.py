@@ -5,6 +5,8 @@ from pydantic import BaseModel, Field, field_validator
 
 class CandidateProfile(BaseModel):
     name: Optional[str] = None
+    target_role: Optional[str] = None
+    company: Optional[str] = None
     skills: List[str]
     experience: List[str]
     gaps_vs_jd: List[str]  # skills the JD wants that the resume lacks

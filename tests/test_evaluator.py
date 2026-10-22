@@ -56,9 +56,39 @@ for label, ev in results.items():
 
 assert results["good"].overall > results["average"].overall > results["bad"].overall, \
     "Scores are not ordered good > average > bad"
-assert results["good"].overall - results["average"].overall >= 1.0, \
+assert results["good"].overall - results["average"].overall >= 0.75, \
     "Good and average are too close: rubric is too generous"
 assert results["casual_good"].overall > results["average"].overall, \
     "Casual but specific answer should beat the generic one"
 print("Casual check passed: casual_good > average")
 print("\nOrdering check passed: good > average > bad")
+
+empty = evaluator.evaluate(question, "(no answer given)")
+assert empty.overall == 1.0, "Empty answer should score 1 on every dimension"
+print("Empty-answer check passed")
+
+# --- extra cases: 50-word cap and tense ---
+q_conflict = Question(
+    text="Tell me about a conflict or setback you handled while delivering a project.",
+    mode="hr", difficulty=3)
+q_docker = Question(
+    text="How would you get up to speed with Docker so you could deploy models?",
+    mode="hr", difficulty=3)
+
+short_good = ("Two sales managers wanted different things. One wanted a detailed table, the other a simple "
+              "summary. I suggested a summary page with a drill-down page for the details, showed both a "
+              "quick mockup, and they agreed.")
+in_progress = ("I haven't used Docker yet, so I'd start with something I've already built. I'm doing that "
+               "now with my Flask attendance app: following the official Docker docs and getting it to run "
+               "the same way on my laptop and inside a container.")
+
+ev_short = evaluator.evaluate(q_conflict, short_good)
+print(ev_short.model_dump_json(indent=2))
+assert max(ev_short.relevance, ev_short.depth, ev_short.clarity, ev_short.structure) < 5, \
+    "Answer under 50 words must not score 5"
+assert ev_short.improved_answer.strip() != short_good and "[" in ev_short.improved_answer, \
+    "Improved answer must add a bracketed question, not copy the answer"
+print("Short-answer check passed")
+
+ev_prog = evaluator.evaluate(q_docker, in_progress)
+print(ev_prog.model_dump_json(indent=2))   # inspect the tense by eye

@@ -1,5 +1,7 @@
 {
   "name": "Ananya Verma",
+  "target_role": "Junior Machine Learning Engineer",
+  "company": "Northwind AI Labs",
   "skills": [
     "Python",
     "SQL",
@@ -23,18 +25,22 @@
     "Problem solving"
   ],
   "experience": [
-    "Data Analyst Intern at Brightpath Analytics (May–Jul 2025): cleaned 200K+ rows of retail sales data with Python (Pandas, NumPy) and SQL, built Power BI dashboards, wrote PostgreSQL queries, and trained a logistic regression model for churn prediction.",
-    "Movie Recommendation System project: implemented content‑based and collaborative‑filtering recommenders using Python, scikit-learn, Pandas and Streamlit; evaluated with RMSE and precision@k and deployed a Streamlit UI.",
-    "Student Attendance Management App project: developed a Flask web application with SQLite backend, implementing login, attendance marking, and monthly reports.",
-    "House Price Prediction project: compared Linear Regression, Random Forest, and Gradient Boosting on the Ames housing dataset, performed feature engineering and cross‑validation, achieving R² of 0.88."
+    "Data Analyst Intern at Brightpath Analytics (May–Jul 2025): cleaned 200K+ rows of retail sales data, built Power BI dashboards, wrote advanced SQL queries, and trained a logistic regression model for churn prediction.",
+    "Movie Recommendation System project: implemented content‑based and collaborative filtering recommenders using Python, scikit-learn, and deployed a Streamlit interface.",
+    "Student Attendance Management App project: developed a Flask web application with SQLite backend for attendance tracking and reporting.",
+    "House Price Prediction project: evaluated Linear Regression, Random Forest, and Gradient Boosting models on the Kaggle Ames housing dataset, applying feature engineering and cross‑validation."
   ],
   "gaps_vs_jd": [
-    "No experience with deep learning frameworks such as PyTorch or TensorFlow",
-    "No Docker experience",
-    "No AWS or other cloud platform experience",
-    "No familiarity with MLOps tools like MLflow or DVC",
-    "No explicit Linux command‑line or CI/CD pipeline experience",
-    "No explicit statement of strong data structures and algorithms knowledge (only coursework listed)",
-    "No documented open‑source contributions beyond personal GitHub repository"
+    "FastAPI experience (REST API framework)",
+    "Docker containerization",
+    "AWS deployment experience (EC2, S3, Lambda)",
+    "Unit testing of code",
+    "Experiment tracking tools (e.g., MLflow, DVC)",
+    "Model monitoring for drift and failures in production",
+    "Deep learning framework experience (PyTorch or TensorFlow)",
+    "Explicit demonstration of data structures and algorithms knowledge",
+    "Time‑series forecasting experience",
+    "Linux command‑line proficiency",
+    "CI/CD pipeline experience"
   ]
 }
