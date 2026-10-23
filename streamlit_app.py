@@ -7,7 +7,7 @@ from agents.interviewer import Interviewer
 from agents.evaluator import Evaluator
 
 st.set_page_config(page_title="AI Interview Coach", page_icon="🎤", layout="centered")
-
+MODES = {"HR": "hr", "Technical": "technical", "Both": "both"}
 # ---------- Session state ----------
 # Streamlit re-runs this whole script on every click, so anything that must
 # survive a click is stored in st.session_state.
@@ -67,8 +67,12 @@ def render_messages():
     for m in st.session_state.messages:
         with st.chat_message(m["role"]):
             st.write(m["content"])
+            if m.get("tag"):
+                st.caption(m["tag"])
             if m.get("evaluation") is not None:
                 show_evaluation(m["evaluation"])
+            if m.get("note"):
+                st.caption(m["note"])
 
 
 # ---------- Actions ----------
@@ -82,13 +86,14 @@ def ask_next_question() -> bool:
         st.session_state.current_q = None
         return False
     st.session_state.current_q = q
-    st.session_state.messages.append({"role": "assistant", "content": q.text})
+    st.session_state.messages.append({"role": "assistant", "content": q.text,
+                                      "tag": f"{q.mode.upper()} · difficulty {q.difficulty}/5"})
     return True
 
 
-def start_interview(profile, total, difficulty):
+def start_interview(profile, total, difficulty, mode):
     s = st.session_state
-    s.interviewer = Interviewer(profile, mode="hr", difficulty=difficulty, total_questions=total)
+    s.interviewer = Interviewer(profile, mode=mode, difficulty=difficulty, total_questions=total)
     s.evaluator = Evaluator(profile)
     s.total_questions = total
     s.messages = []
@@ -111,9 +116,13 @@ def handle_answer(answer):
         return
     s.interviewer.record_answer(q, answer)          # short-term memory for follow-up questions
     s.evaluations.append(evaluation)
+    old_d = s.interviewer.difficulty
+    new_d = s.interviewer.adjust_difficulty(evaluation.overall)   # code decides, not the LLM
+    note = (f"Difficulty {'raised' if new_d > old_d else 'lowered'}: {old_d} → {new_d}"
+            if new_d != old_d else None)
     s.messages.append({"role": "user", "content": answer})
     s.messages.append({"role": "assistant", "content": "Here is feedback on your answer:",
-                       "evaluation": evaluation})
+                       "evaluation": evaluation, "note": note})
     s.current_q = None
     if len(s.evaluations) >= s.total_questions:
         s.stage = "done"
@@ -146,11 +155,11 @@ def render_setup():
     if profile is not None:
         show_profile(profile)
         st.subheader("Interview settings")
-        st.selectbox("Interview type", ["HR"], help="Technical mode is added in a later step.")
+        itype = st.selectbox("Interview type", list(MODES))
         total = st.slider("Number of questions", 3, 6, 5)
         difficulty = st.slider("Starting difficulty", 1, 5, 3)
         if st.button("Start interview", type="primary"):
-            start_interview(profile, total, difficulty)
+            start_interview(profile, total, difficulty, MODES[itype])
             st.rerun()
 
 
@@ -165,6 +174,7 @@ def render_interview():
 
     with st.sidebar:
         st.write(f"Answered: {answered}/{total}")
+        st.write(f"Current difficulty: {s.interviewer.difficulty}/5")
         if st.button("End interview now"):
             s.stage = "done"
             st.rerun()

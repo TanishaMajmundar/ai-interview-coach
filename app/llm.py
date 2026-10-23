@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
-from groq import Groq
+import time
+from groq import Groq, RateLimitError
 
 load_dotenv()
 
@@ -16,14 +17,21 @@ def call_llm(system: str, user: str, json_mode: bool = False,
         # Forces valid JSON syntax (the prompt must also mention "JSON")
         kwargs["response_format"] = {"type": "json_object"}
 
-    resp = _client.chat.completions.create(
-        model=MODEL,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": user},
-        ],
-        max_tokens=max_tokens,
-        temperature=temperature,
-        **kwargs,
-    )
-    return resp.choices[0].message.content or ""
+    waits = [2, 5, 10, 20]            # seconds to wait after each rate-limit error
+    for attempt in range(len(waits) + 1):
+        try:
+            resp = _client.chat.completions.create(
+                model=MODEL,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                max_tokens=max_tokens,
+                temperature=temperature,
+                **kwargs,
+            )
+            return resp.choices[0].message.content or ""
+        except RateLimitError:
+            if attempt == len(waits):
+                raise                  # still limited after all retries: let the caller show the error
+            time.sleep(waits[attempt])

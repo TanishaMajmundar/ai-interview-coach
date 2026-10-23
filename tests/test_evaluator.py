@@ -92,3 +92,25 @@ print("Short-answer check passed")
 
 ev_prog = evaluator.evaluate(q_docker, in_progress)
 print(ev_prog.model_dump_json(indent=2))   # inspect the tense by eye
+
+# --- technical mode ---
+q_tech = Question(text="What is overfitting and how can you reduce it?", mode="technical", difficulty=3)
+tech_answers = {
+    "good": ("Overfitting is when a model learns the noise in the training data, so it scores well on "
+             "training data but poorly on new data. You can reduce it with more data, a simpler model, "
+             "regularisation such as L2, early stopping, or dropout in neural networks. I'd check it "
+             "with cross-validation, by comparing training and validation scores."),
+    "average": "Overfitting is when the model works well on training data but not on test data. You can fix it with more data.",
+    "wrong": "Overfitting is when the model is too simple and misses patterns, so you fix it by making the model smaller.",
+    "idk": "I don't know.",
+}
+tech = {k: evaluator.evaluate(q_tech, v) for k, v in tech_answers.items()}
+for k, ev in tech.items():
+    print(f"\n===== TECH {k.upper()} =====")
+    print(ev.model_dump_json(indent=2))
+    print("OVERALL:", ev.overall)
+
+assert tech["good"].overall > tech["average"].overall > tech["idk"].overall, "technical ordering failed"
+assert tech["wrong"].relevance <= 2 and tech["wrong"].depth <= 2, "a factual error must cap relevance and depth at 2"
+assert tech["good"].overall - tech["wrong"].overall >= 1.0, "wrong answer scored too close to the good one"
+print("\nTechnical checks passed")
